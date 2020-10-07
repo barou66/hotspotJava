@@ -2,10 +2,8 @@ package ml.generator.hotspot.config;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.client.RestTemplate;
@@ -16,9 +14,6 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 
 @Configuration
 public class ApiConfig implements WebMvcConfigurer {
-
-	@Autowired
-	private Environment environment;
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
@@ -36,20 +31,15 @@ public class ApiConfig implements WebMvcConfigurer {
 
 		registry.addResourceHandler("/**").addResourceLocations("/");
 
-		String[] activeProfiles = environment.getActiveProfiles();
-		for (String profile : activeProfiles) {
-			if ("prod".equals(profile) || "rect".equals(profile)) {// || "rect".equals(profile)
-				registry.addResourceHandler("/**/*").addResourceLocations("classpath:/static/").resourceChain(true)
-						.addResolver(new PathResourceResolver() {
-							@Override
-							protected Resource getResource(String resourcePath, Resource location) throws IOException {
-								Resource requestedResource = location.createRelative(resourcePath);
-								return requestedResource.exists() && requestedResource.isReadable() ? requestedResource
-										: new ClassPathResource("/static/index.html");
-							}
-						});
-			}
-		}
+		registry.addResourceHandler("/**/*").addResourceLocations("classpath:/static/").resourceChain(true)
+				.addResolver(new PathResourceResolver() {
+					@Override
+					protected Resource getResource(String resourcePath, Resource location) throws IOException {
+						Resource requestedResource = location.createRelative(resourcePath);
+						return requestedResource.exists() && requestedResource.isReadable() ? requestedResource
+								: new ClassPathResource("/static/index.html");
+					}
+				});
 
 		registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
 	}
